@@ -23,9 +23,10 @@ void setTonalityForPSO(Tonality t);
  * NOTE: You're advised to use 'free()' function FOR EACH ARRAY LINE AND ARRAY ITSELF
  * after returned accompaniment will be used.
  *
+ * @param printIters Do you want to print out info about each iteration's best fitness?
  * @return Array of chords
  */
-int **generateAccompaniment();
+int **generateAccompaniment(_Bool showDebugInfo);
 
 /**
  * Create particle of accompaniment for PSO algorithm.
@@ -49,9 +50,10 @@ double accompanimentFitnessFunction(double *part);
  * NOTE: You're advised to use 'free()' function after returned accompaniment will be used.
  * NOTE: __MUS_PSO_ROOTS should be defined, CUR_CHORD_INDEX should be in range [0, ACC_DIMENSIONS).
  *
+ * @param printIters Do you want to print out info about each iteration's best fitness?
  * @return Array of chords
  */
-int *generateChord();
+int *generateChord(_Bool showDebugInfo);
 
 /**
  * Create particle of chord for PSO algorithm.
@@ -74,9 +76,10 @@ double chordFitnessFunction(double *part);
  * Get a melody's set of notes that fits predefined conditions and generated accompaniment.
  * NOTE: You're advised to use 'free()' function after returned melody will be used.
  *
+ * @param printIters Do you want to print out info about each iteration's best fitness?
  * @return Array of notes
  */
-int *generateMelody();
+int *generateMelody(_Bool showDebugInfo);
 
 /**
  * Create particle of melody for PSO algorithm.

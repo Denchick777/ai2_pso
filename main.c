@@ -13,8 +13,8 @@ int main(int argc, char **argv) {
 
     setTonalityForPSO(Tonality_init(tonic, mode));
 
-    int **accompaniment = generateAccompaniment();
-    int *melody = generateMelody();
+    int **accompaniment = generateAccompaniment(true);
+    int *melody = generateMelody(true);
     writeMIDI("mus.mid", melody, accompaniment);
 
     int i;
@@ -33,7 +33,41 @@ int main(int argc, char **argv) {
 //    __MUS_PSO_ROOTS = root;
 //    __CUR_CHORD_INDEX = 0;
 //    double p[3] = {60, 64, 67};
+//    double p[16] = {64.285335,
+//                    64.295563,
+//                    59.077286,
+//                    64.264329,
+//                    64.442367,
+//                    57.227228,
+//                    64.272571,
+//                    76.086004,
+//                    76.243112,
+//                    76.344085,
+//                    76.252339,
+//                    76.288817,
+//                    69.100494,
+//                    71.277332,
+//                    64.000000,
+//                    52.500000};
 //    setTonalityForPSO(Tonality_init(60, 1));
-//    chordFitnessFunction(p);
-//    return 0;
+////    chordFitnessFunction(p);
+//    accompanimentFitnessFunction(p);
+    return 0;
 }
+
+//54.310183
+//59.238749
+//54.193272
+//54.260192
+//54.220007
+//47.150747
+//59.106796
+//47.430981
+//52.296386
+//47.248900
+//52.296473
+//53.985461
+//54.143412
+//59.381210
+//59.491188
+//52.097340

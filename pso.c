@@ -4,6 +4,7 @@
 
 #include <math.h>
 #include <malloc.h>
+#include <stdio.h>
 #include "pso.h"
 #include "random.h"
 
@@ -34,7 +35,8 @@ __Particle __Particle_init(int dimensions, double *initPosition, double minVal, 
     double *vel = (double *) malloc(new_size);
     for (i = 0; i < dimensions; ++i) {
         best[i] = initPosition[i];
-        vel[i] = getRandomDoubleBetween(-diff, diff);
+//        vel[i] = getRandomDoubleBetween(-diff, diff);
+        vel[i] = 0.0;
     }
 
     __Particle res = {initPosition, best, -1, vel};
@@ -48,7 +50,7 @@ void __Particle_free(__Particle *p) {
     free(p->velocity);
 }
 
-double *executePSO(ConfigPSO *conf) {
+double *executePSO(ConfigPSO *conf, _Bool printIters) {
     if (conf->particleCreator == NULL ||
         conf->fitnessFunction == NULL ||
         conf->dimensions < 1 ||
@@ -108,9 +110,16 @@ double *executePSO(ConfigPSO *conf) {
                 }
             }
         }
+        if (printIters) {
+            printf("Iteration: %d; Best fitness: %f\n", iterCounter, bestParticle->bestFitness);
+        }
         if (inert >= conf->inertThreshold) {
             inert *= conf->inertStep;
         }
+    }
+
+    for (i = 0; i < conf->dimensions; ++i) {  // TODO remove
+        printf("best[%d] %f\n", i, bestParticle->bestPosition[i]);
     }
 
     double *res = (double *) malloc(sizeof(double) * conf->dimensions);

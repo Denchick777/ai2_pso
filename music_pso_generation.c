@@ -30,7 +30,7 @@ void setTonalityForPSO(Tonality t) {
 
 /* -------------------- Accompaniment PSO generation functions -------------------- */
 
-int **generateAccompaniment() {
+int **generateAccompaniment(_Bool showDebugInfo) {
     if (__MUS_PSO_TONALITY.tonic < 60 || __MUS_PSO_TONALITY.tonic > 71) {
         return NULL;
     }
@@ -43,17 +43,17 @@ int **generateAccompaniment() {
     conf.fitnessFunction = &accompanimentFitnessFunction;
     conf.dimensions = ACC_DIMENSIONS;
     conf.swarmSize = 300;
-    conf.iterThreshold = 5000;
+    conf.iterThreshold = 500;
     conf.funcMin = MIDI_MIN;
     conf.funcMax = MIDI_MAX;
     conf.c0 = 1.0;
-    conf.c1 = 35.3;
-    conf.c2 = 5.15;
+    conf.c1 = 2.05;
+    conf.c2 = 2.05;
     conf.inertInit = 1.0;
     conf.inertThreshold = 0.0;
     conf.inertStep = 0.999;
 
-    double *res = executePSO(&conf);
+    double *res = executePSO(&conf, showDebugInfo);
 
     __MUS_PSO_ROOTS = (int *) malloc(sizeof(int) * ACC_DIMENSIONS);
     for (i = 0; i < ACC_DIMENSIONS; ++i) {
@@ -69,7 +69,7 @@ int **generateAccompaniment() {
     __MUS_PSO_ACCOMPANIMENT = (int **) malloc(sizeof(int *) * ACC_DIMENSIONS);
     for (i = 0; i < ACC_DIMENSIONS; ++i) {
         __CUR_CHORD_INDEX = i;
-        __MUS_PSO_ACCOMPANIMENT[i] = generateChord();
+        __MUS_PSO_ACCOMPANIMENT[i] = generateChord(true);
     }
     free(__MUS_PSO_ROOTS);
 
@@ -80,8 +80,7 @@ double *accompanimentParticleCreator() {
     double *res = malloc(sizeof(double) * ACC_DIMENSIONS);
     int i;
     for (i = 0; i < ACC_DIMENSIONS; ++i) {
-        res[i] = getRandomDoubleBetween(MIDI_MIN, MIDI_MAX);  // TODO
-//        res[i] = getRandomDoubleBetween(ALLOWED_MIN, ALLOWED_MAX);
+        res[i] = getRandomDoubleBetween(MIDI_MIN, MIDI_MAX);
     }
     return res;
 }
@@ -99,7 +98,7 @@ double accompanimentFitnessFunction(double *part) {
         rootRound = (int) round(curRoot);
 
         // 1st condition - range belonging
-        weight = 0.0;
+        weight = 100.0;
         if (curRoot <= ALLOWED_MIN && curRoot > MIDI_MIN) {
             fit += weight * (ALLOWED_MIN - curRoot) / (ALLOWED_MIN - MIDI_MIN);
         } else if (curRoot >= ROOT_MAX && curRoot < MIDI_MAX) {
@@ -110,11 +109,11 @@ double accompanimentFitnessFunction(double *part) {
 
         // 2nd condition - no more than 12 between neighbours
         if (i > 0 && fabs(rootRound - part[i - 1]) > 12) {
-            weight = 0.0;
-            if (curRoot < part[i - 1] && curRoot > MIDI_MIN && part[i - 1] != 12 - MIDI_MIN) {
+            weight = 1000.0;
+            if (curRoot < part[i - 1] - 12 && curRoot > MIDI_MIN) {
                 fit += weight * (part[i - 1] - 12 - curRoot) / (part[i - 1] - 12 - MIDI_MIN);
-            } else if (curRoot > part[i - 1] && curRoot < MIDI_MAX && part[i - 1] != 12 + MIDI_MAX) {
-                fit += weight * (curRoot - part[i - 1] + 12) / (MIDI_MAX - part[i - 1] + 12);
+            } else if (curRoot > part[i - 1] + 12 && curRoot < MIDI_MAX) {
+                fit += weight * (curRoot - part[i - 1] - 12) / (MIDI_MAX - part[i - 1] - 12);
             } else {
                 fit += weight;
             }
@@ -122,7 +121,7 @@ double accompanimentFitnessFunction(double *part) {
 
         // 3rd condition - no more than 4 same in a row
         if (i > 3) {
-            weight = 0.0;
+            weight = 100000.0;
             counter = 1;
             while (part[i - counter] == rootRound && i - counter >= 0) {
                 ++counter;
@@ -155,7 +154,7 @@ double accompanimentFitnessFunction(double *part) {
         }
 
         // 6th condition - tonics
-        weight = 0.0;
+        weight = 100.0;
         if (i == 0 || i % 4 == 3) {
             closest = findClosestNotesUsingDegrees(curRoot, &__MUS_PSO_TONALITY, 1, tonicDegree);
             if (closest[0] != closest[1]) {
@@ -184,7 +183,7 @@ double accompanimentFitnessFunction(double *part) {
         }
     }
     // 5th condition - continuation
-    weight = 0.0;
+    weight = 100000.0;
     if (max - min > maxDifference) {
         fit += weight * (1 - 1 / (max - min - maxDifference + 1));
     }
@@ -194,7 +193,7 @@ double accompanimentFitnessFunction(double *part) {
 
 /* -------------------- Chord PSO generation functions -------------------- */
 
-int *generateChord() {
+int *generateChord(_Bool showDebugInfo) {
     if (__CUR_CHORD_INDEX < 0 || __CUR_CHORD_INDEX > ACC_DIMENSIONS) {
         return NULL;
     }
@@ -217,7 +216,7 @@ int *generateChord() {
     conf.inertThreshold = 0.0;
     conf.inertStep = 0.999;
 
-    double *chords = executePSO(&conf);
+    double *chords = executePSO(&conf, showDebugInfo);
 
     int *res = (int *) malloc(sizeof(int) * ACC_CHORD_SIZE);
     for (i = 0; i < ACC_CHORD_SIZE; ++i) {
@@ -238,18 +237,43 @@ double *chordParticleCreator() {
 }
 
 double chordFitnessFunction(double *part) {
-    double fit = 0.0, weight = 1.0, curNote;
+    double fit = 0.0, weight, curNote, rightDistance, realDistance;
+    double curRoot = __MUS_PSO_ROOTS[__CUR_CHORD_INDEX];
     int i, degree, target;
+
+    // 1st condition - root is the same
+    weight = 1000;
+    if (part[0] <= MIDI_MIN || part[1] >= MIDI_MAX) {
+        fit += weight;
+    } else {
+        fit += weight * (part[0] > curRoot ? (part[0] - curRoot) / (MIDI_MAX - curRoot) :
+                         (curRoot - part[0]) / (curRoot - MIDI_MIN));
+    }
     for (i = 0; i < ACC_CHORD_SIZE; ++i) {
         curNote = part[i];
+
+        // 2nd condition - correct degree
+        weight = 100;
         if (curNote < MIDI_MIN || curNote > MIDI_MAX) {
             fit += weight;
         } else {
-            degree = Tonality_getDegreeOfNote(&__MUS_PSO_TONALITY, __MUS_PSO_ROOTS[__CUR_CHORD_INDEX]) + 2 * i;
+            degree = Tonality_getDegreeOfNote(&__MUS_PSO_TONALITY, (int) round(curRoot)) + 2 * i;
             target = Tonality_getNoteByDegree(&__MUS_PSO_TONALITY, degree) -
-                     C_FIRST + __MUS_PSO_ROOTS[__CUR_CHORD_INDEX];
-            fit += weight * (ACC_CHORD_SIZE - i) * (target - curNote) /
+                     C_FIRST + (int) round(curRoot);
+            fit += weight * (target - curNote) /
                    (target - (curNote > target ? MIDI_MAX : MIDI_MIN));
+        }
+
+        // 3rd condition - distance between neighbours
+        if (i != 0) {
+            weight = 10;
+            rightDistance = (i == 1 ? (__MUS_PSO_TONALITY.mode ? 4.0 : 3.0) : (__MUS_PSO_TONALITY.mode ? 3.0 : 4.0));
+            realDistance = fabs(curNote - part[i - 1]);
+            if (realDistance != rightDistance) {
+                fit += weight * (realDistance < rightDistance ?
+                                 (rightDistance - realDistance) / (rightDistance) :
+                                 (realDistance - rightDistance) / (MIDI_MAX - MIDI_MIN - realDistance));
+            }
         }
     }
     return fit;
@@ -257,7 +281,7 @@ double chordFitnessFunction(double *part) {
 
 /* -------------------- Melody PSO generation functions -------------------- */
 
-int *generateMelody() {
+int *generateMelody(_Bool showDebugInfo) {
     if (__MUS_PSO_ACCOMPANIMENT == NULL || __MUS_PSO_TONALITY.tonic < 60 || __MUS_PSO_TONALITY.tonic > 71) {
         return NULL;
     }
@@ -270,7 +294,7 @@ int *generateMelody() {
     conf.fitnessFunction = &melodyFitnessFunction;
     conf.dimensions = MEL_DIMENSIONS;
     conf.swarmSize = 200;
-    conf.iterThreshold = 200;
+    conf.iterThreshold = 300;
     conf.funcMin = MIDI_MIN;
     conf.funcMax = MIDI_MAX;
     conf.c0 = 1.0;
@@ -280,7 +304,7 @@ int *generateMelody() {
     conf.inertThreshold = 0.0;
     conf.inertStep = 0.999;
 
-    double *melody = executePSO(&conf);
+    double *melody = executePSO(&conf, showDebugInfo);
 
     int *res = (int *) malloc(sizeof(int) * MEL_DIMENSIONS);
     for (i = 0; i < MEL_DIMENSIONS; ++i) {

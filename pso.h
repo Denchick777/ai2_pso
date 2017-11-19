@@ -148,8 +148,9 @@ void __Particle_free(__Particle *p);
  * combination of inertia arguments should provide a finite number of inertia changing steps.
  *
  * @param conf Set of parameters for PSO algorithm (ConfigPSO object)
+ * @param printIters Do you want to print out info about each iteration's best fitness?
  * @return Array with values of the best particle, NULL if wrong configuration argument(s).
  */
-double *executePSO(ConfigPSO *conf);
+double *executePSO(ConfigPSO *conf, _Bool printIters);
 
 #endif //AI2_PSO_H

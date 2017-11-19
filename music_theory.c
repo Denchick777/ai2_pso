@@ -18,7 +18,7 @@ double *findClosestNotesUsingDegrees(double num, Tonality *t, int degc, int *deg
 
     res[0] = num_round;
     res[1] = num_round;
-    if (Tonality_isNumHasDegreeFromList(t, (int) num, degc, degrees)) {
+    if ((int) num_round == (int) num && Tonality_isNumHasDegreeFromList(t, (int) num_round, degc, degrees)) {
         return res;
     }
 
