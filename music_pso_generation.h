@@ -97,4 +97,13 @@ double *melodyParticleCreator();
  */
 double melodyFitnessFunction(double *part);
 
+/**
+ * Check if the given pair of melody and accompaniment is correct by the set upped obligatory conditions.
+ *
+ * @param melody Array of 32 notes
+ * @param accompaniment Array of 16 arrays of 3 notes each
+ * @return true - if this music satisfies the conditions, false otherwise
+ */
+_Bool checkForCorrectness(int *melody, int **accompaniment);
+
 #endif //AI2_MUSIC_PSO_GENERATION_H

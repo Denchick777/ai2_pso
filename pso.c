@@ -113,10 +113,6 @@ double *executePSO(ConfigPSO *conf, _Bool printIters) {
         }
     }
 
-    for (i = 0; i < conf->dimensions; ++i) {  // TODO remove
-        printf("best[%d] %.15f\n", i, bestParticle->bestPosition[i]);
-    }
-
     double *res = (double *) malloc(sizeof(double) * conf->dimensions);
     for (i = 0; i < conf->dimensions; ++i) {
         res[i] = bestParticle->bestPosition[i];

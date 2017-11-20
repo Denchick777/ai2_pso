@@ -264,7 +264,8 @@ double chordFitnessFunction(double *part) {
             realDistance = fabs(curNote - part[i - 1]);
             if (realDistance != rightDistance) {
                 fit += weight * (realDistance < rightDistance ?
-                                 1 : (realDistance - rightDistance) / (MIDI_MAX - MIDI_MIN - rightDistance));
+                                 1 + (rightDistance - realDistance) / (rightDistance) :
+                                 (realDistance - rightDistance) / (MIDI_MAX - MIDI_MIN - rightDistance));
             }
         }
     }
@@ -314,15 +315,98 @@ double *melodyParticleCreator() {
 }
 
 double melodyFitnessFunction(double *part) {
-    double fit = 0.0, curNote;
+    double fit = 0.0, curNote, weight, mid, curMin;
+    double *closest;
+    int *curChord;
     int i;
-    for (i = 0; i < MEL_DIMENSIONS; i += 2) {  // All odd notes that are goes together with chords
+    int degreesOdd[3] = {-1, -1, -1};  // for the chord degrees
+    int degreesEven[7] = {1, 2, 3, 4, 5, 6, 7};  // the whole tonality
+    int tonicDegree[1] = {1};  // only tonic for degree search
+    for (i = 0; i < MEL_DIMENSIONS; ++i) {
         curNote = part[i];
-        // TODO
-    }
-    for (i = 1; i < MEL_DIMENSIONS; i += 2) {  // All even notes that are played between/after chords
-        curNote = part[i];
-        // TODO
+        curChord = __MUS_PSO_ACCOMPANIMENT[i / 2];
+
+        // 1st condition - range belonging (from the upper note of chord up to the maximum of valid range)
+        if (i % 2 == 0) {  // if goes with the chord
+            curMin = curChord[0] + 12;
+        } else {  // if between/after chord(s)
+            curMin = curChord[2] + 1;
+        }
+        weight = 100.0;
+        if (curNote <= curMin && curNote > MIDI_MIN) {
+            fit += weight * (curMin - curNote) / (curMin - MIDI_MIN);
+        } else if (curNote >= ALLOWED_MAX && curNote < MIDI_MAX) {
+            fit += weight * (curNote - ALLOWED_MAX) / (MIDI_MAX - ALLOWED_MAX);
+        } else if (curNote <= MIDI_MIN || curNote >= MIDI_MAX) {
+            fit += weight;
+        }
+
+        // 2nd condition - if odd: degree is from the chord; if even - belonging to the tonality
+        if (i % 2 == 0) {  // if goes with the chord
+            degreesOdd[0] = Tonality_getDegreeOfNote(&__MUS_PSO_TONALITY, curChord[0]);
+            degreesOdd[1] = Tonality_getDegreeOfNote(&__MUS_PSO_TONALITY, curChord[1]);
+            degreesOdd[2] = Tonality_getDegreeOfNote(&__MUS_PSO_TONALITY, curChord[2]);
+            closest = findClosestNotesUsingDegrees(curNote, &__MUS_PSO_TONALITY, 3, degreesOdd);
+        } else {  // if between/after chord(s)
+            closest = findClosestNotesUsingDegrees(curNote, &__MUS_PSO_TONALITY, 7, degreesEven);
+        }
+        if (closest[0] != closest[1]) {
+            weight = 10.0;
+            if (closest[0] != -ONE_BY_ZERO && closest[1] != ONE_BY_ZERO) {
+                mid = (closest[0] + closest[1]) / 2;
+                fit += weight * (curNote > mid ? (closest[1] - curNote) / (closest[1] - mid) :
+                                 (curNote - closest[0]) / (mid - closest[0]));
+            } else {
+                fit += weight;
+            }
+        }
+        free(closest);
+
+        // 3rd condition - no more than 12 between neighbours
+        if (i > 0 && fabs(round(curNote) - part[i - 1]) > 12) {
+            weight = 1000.0;
+            if (curNote < part[i - 1] - 12 && curNote > MIDI_MIN) {
+                fit += weight * (part[i - 1] - 12 - curNote) / (part[i - 1] - 12 - MIDI_MIN);
+            } else if (curNote > part[i - 1] + 12 && curNote < MIDI_MAX) {
+                fit += weight * (curNote - part[i - 1] - 12) / (MIDI_MAX - part[i - 1] - 12);
+            } else {
+                fit += weight;
+            }
+        }
+
+        // 4th condition - tonics
+        weight = 100.0;
+        if (i == 0 || i % 8 == 7) {
+            closest = findClosestNotesUsingDegrees(curNote, &__MUS_PSO_TONALITY, 1, tonicDegree);
+            if (closest[0] != closest[1]) {
+                if (closest[0] != -ONE_BY_ZERO && closest[1] != ONE_BY_ZERO) {
+                    mid = (closest[0] + closest[1]) / 2;
+                    if (i == 0) {
+                        fit += weight * 0.9 *
+                               (curNote > mid ? (closest[1] - curNote) / (closest[1] - mid) :
+                                (curNote - closest[0]) / (mid - closest[0]));
+                    } else if (i % 8 == 7) {
+                        if (i == MEL_DIMENSIONS - 1) {
+                            fit += weight *
+                                   (curNote > mid ? (closest[1] - curNote) / (closest[1] - mid) :
+                                    (curNote - closest[0]) / (mid - closest[0]));
+                        } else {
+                            fit += weight * 0.5 *
+                                   (curNote > mid ? (closest[1] - curNote) / (closest[1] - mid) :
+                                    (curNote - closest[0]) / (mid - closest[0]));
+                        }
+                    }
+                } else {
+                    fit += weight;
+                }
+            }
+            free(closest);
+        }
     }
     return fit;
+}
+
+_Bool checkForCorrectness(int *melody, int **accompaniment) {
+    // TODO
+    return true;
 }
