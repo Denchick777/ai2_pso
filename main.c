@@ -29,10 +29,10 @@ int main(int argc, char **argv) {
     return 0;
 
 //    int *root = malloc(sizeof(int));
-//    *root = 60;
+//    *root = 77;
 //    __MUS_PSO_ROOTS = root;
 //    __CUR_CHORD_INDEX = 0;
-//    double p[3] = {60, 64, 67};
+//    double p[3] = {63, 67, 70};
 //    double p[16] = {64.285335,
 //                    64.295563,
 //                    59.077286,
@@ -49,25 +49,8 @@ int main(int argc, char **argv) {
 //                    71.277332,
 //                    64.000000,
 //                    52.500000};
-//    setTonalityForPSO(Tonality_init(60, 1));
-////    chordFitnessFunction(p);
+//    setTonalityForPSO(Tonality_init(68, 1));
+//    chordFitnessFunction(p);
 //    accompanimentFitnessFunction(p);
     return 0;
 }
-
-//54.310183
-//59.238749
-//54.193272
-//54.260192
-//54.220007
-//47.150747
-//59.106796
-//47.430981
-//52.296386
-//47.248900
-//52.296473
-//53.985461
-//54.143412
-//59.381210
-//59.491188
-//52.097340

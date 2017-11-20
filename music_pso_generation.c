@@ -58,11 +58,6 @@ int **generateAccompaniment(_Bool showDebugInfo) {
     __MUS_PSO_ROOTS = (int *) malloc(sizeof(int) * ACC_DIMENSIONS);
     for (i = 0; i < ACC_DIMENSIONS; ++i) {
         __MUS_PSO_ROOTS[i] = (int) round(res[i]);
-        printf("%d %s\n",
-               __MUS_PSO_ROOTS[i],
-               (__MUS_PSO_ROOTS[i] - (__MUS_PSO_TONALITY.tonic % 12)) % 12 == 0 ||
-               (__MUS_PSO_ROOTS[i] - (__MUS_PSO_TONALITY.tonic % 12)) % 12 == 5 ||
-               (__MUS_PSO_ROOTS[i] - (__MUS_PSO_TONALITY.tonic % 12)) % 12 == 7 ? "true" : "false");  // TODO remove
     }
     free(res);
 
@@ -206,12 +201,12 @@ int *generateChord(_Bool showDebugInfo) {
     conf.fitnessFunction = &chordFitnessFunction;
     conf.dimensions = ACC_CHORD_SIZE;
     conf.swarmSize = 300;
-    conf.iterThreshold = 200;
+    conf.iterThreshold = 400;
     conf.funcMin = MIDI_MIN;
     conf.funcMax = MIDI_MAX;
     conf.c0 = 1.0;
-    conf.c1 = 3.0;
-    conf.c2 = 5.0;
+    conf.c1 = 2.05;
+    conf.c2 = 2.05;
     conf.inertInit = 1.0;
     conf.inertThreshold = 0.0;
     conf.inertStep = 0.999;
@@ -242,7 +237,7 @@ double chordFitnessFunction(double *part) {
     int i, degree, target;
 
     // 1st condition - root is the same
-    weight = 1000;
+    weight = 10000;
     if (part[0] <= MIDI_MIN || part[1] >= MIDI_MAX) {
         fit += weight;
     } else {
@@ -258,21 +253,22 @@ double chordFitnessFunction(double *part) {
             fit += weight;
         } else {
             degree = Tonality_getDegreeOfNote(&__MUS_PSO_TONALITY, (int) round(curRoot)) + 2 * i;
-            target = Tonality_getNoteByDegree(&__MUS_PSO_TONALITY, degree) -
-                     C_FIRST + (int) round(curRoot);
+            target = Tonality_getNoteByDegree(&__MUS_PSO_TONALITY, degree - (degree > 7 ? 7 : 0)) -
+                     __MUS_PSO_TONALITY.tonic +
+                     OCTAVE_SIZE * (int) (curRoot / OCTAVE_SIZE + degree / 7) +
+                     __MUS_PSO_TONALITY.tonic % OCTAVE_SIZE;
             fit += weight * (target - curNote) /
                    (target - (curNote > target ? MIDI_MAX : MIDI_MIN));
         }
 
         // 3rd condition - distance between neighbours
         if (i != 0) {
-            weight = 10;
+            weight = 1000;
             rightDistance = (i == 1 ? (__MUS_PSO_TONALITY.mode ? 4.0 : 3.0) : (__MUS_PSO_TONALITY.mode ? 3.0 : 4.0));
             realDistance = fabs(curNote - part[i - 1]);
             if (realDistance != rightDistance) {
                 fit += weight * (realDistance < rightDistance ?
-                                 (rightDistance - realDistance) / (rightDistance) :
-                                 (realDistance - rightDistance) / (MIDI_MAX - MIDI_MIN - realDistance));
+                                 1 : (realDistance - rightDistance) / (MIDI_MAX - MIDI_MIN - rightDistance));
             }
         }
     }
@@ -298,8 +294,8 @@ int *generateMelody(_Bool showDebugInfo) {
     conf.funcMin = MIDI_MIN;
     conf.funcMax = MIDI_MAX;
     conf.c0 = 1.0;
-    conf.c1 = 3.0;
-    conf.c2 = 5.0;
+    conf.c1 = 2.05;
+    conf.c2 = 2.05;
     conf.inertInit = 1.0;
     conf.inertThreshold = 0.0;
     conf.inertStep = 0.999;
