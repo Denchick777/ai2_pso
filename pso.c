@@ -14,8 +14,6 @@ ConfigPSO ConfigPSO_init() {
                      0,  // Number of dimensions in a particle
                      100,  // Swarm size
                      100,  // Iterations threshold
-                     0.0,  // Minimum mean of particle's parameter(s)
-                     1.0,  // Maximum mean of particle's parameter(s)
                      1.0,  // Coefficient C0
                      2.0,  // Coefficient C1
                      3.0,  // Coefficient C2
@@ -26,16 +24,14 @@ ConfigPSO ConfigPSO_init() {
     return res;
 }
 
-__Particle __Particle_init(int dimensions, double *initPosition, double minVal, double maxVal) {
+__Particle __Particle_init(int dimensions, double *initPosition) {
     int i;
     size_t new_size = sizeof(double) * dimensions;
-    double diff = maxVal - minVal;
 
     double *best = (double *) malloc(new_size);
     double *vel = (double *) malloc(new_size);
     for (i = 0; i < dimensions; ++i) {
         best[i] = initPosition[i];
-//        vel[i] = getRandomDoubleBetween(-diff, diff);
         vel[i] = 0.0;
     }
 
@@ -56,7 +52,6 @@ double *executePSO(ConfigPSO *conf, _Bool printIters) {
         conf->dimensions < 1 ||
         conf->swarmSize < 1 ||
         conf->iterThreshold < 1 ||
-        conf->funcMax < conf->funcMin ||
         conf->c1 + conf->c2 <= 4 ||
         ((conf->inertInit > conf->inertThreshold) ^ (conf->inertStep >= 0))) {
         return NULL;
@@ -75,7 +70,7 @@ double *executePSO(ConfigPSO *conf, _Bool printIters) {
     __Particle newParticle;
 
     for (i = 0; i < conf->swarmSize; ++i) {
-        newParticle = __Particle_init(conf->dimensions, conf->particleCreator(), conf->funcMin, conf->funcMax);
+        newParticle = __Particle_init(conf->dimensions, conf->particleCreator());
         newParticle.bestFitness = conf->fitnessFunction(newParticle.position);
         *swarm[i] = newParticle;
         if (bestParticle == NULL || bestParticle->bestFitness > newParticle.bestFitness) {

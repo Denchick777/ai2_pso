@@ -44,8 +44,6 @@ int **generateAccompaniment(_Bool showDebugInfo) {
     conf.dimensions = ACC_DIMENSIONS;
     conf.swarmSize = 300;
     conf.iterThreshold = 500;
-    conf.funcMin = MIDI_MIN;
-    conf.funcMax = MIDI_MAX;
     conf.c0 = 1.0;
     conf.c1 = 2.05;
     conf.c2 = 2.05;
@@ -202,8 +200,6 @@ int *generateChord(_Bool showDebugInfo) {
     conf.dimensions = ACC_CHORD_SIZE;
     conf.swarmSize = 300;
     conf.iterThreshold = 400;
-    conf.funcMin = MIDI_MIN;
-    conf.funcMax = MIDI_MAX;
     conf.c0 = 1.0;
     conf.c1 = 2.05;
     conf.c2 = 2.05;
@@ -291,8 +287,6 @@ int *generateMelody(_Bool showDebugInfo) {
     conf.dimensions = MEL_DIMENSIONS;
     conf.swarmSize = 200;
     conf.iterThreshold = 300;
-    conf.funcMin = MIDI_MIN;
-    conf.funcMax = MIDI_MAX;
     conf.c0 = 1.0;
     conf.c1 = 2.05;
     conf.c2 = 2.05;

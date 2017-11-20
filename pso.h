@@ -44,16 +44,6 @@ typedef struct ConfigPSO {
     int iterThreshold;
 
     /**
-     * Minimum value of parameter(s) of any particle.
-     */
-    double funcMin;
-
-    /**
-     * Maximum value of parameter(s) of any particle.
-     */
-    double funcMax;
-
-    /**
      * C0 coefficient - current velocity ratio (used in coefficient normalisation)
      */
     double c0;
@@ -121,11 +111,9 @@ typedef struct __Particle {
  * NOTE: You're advised to use '__Particle_free()' function after this particle will be used.
  *
  * @param initPosition Initial particle's position
- * @param minVal Minimal value of particle's parameter(s)
- * @param maxVal Maximal value of particle's parameter(s)
  * @return __Particle
  */
-__Particle __Particle_init(int dimensions, double *initPosition, double minVal, double maxVal);
+__Particle __Particle_init(int dimensions, double *initPosition);
 
 /**
  * Free all allocated memory under this particle.
