@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <conio.h>
+#include <time.h>
 
 #include "random.h"
 #include "tonality.h"
@@ -7,6 +8,8 @@
 #include "midi_rec.h"
 
 int main(int argc, char **argv) {
+    clock_t startTime = clock();
+
     int tonic = getRandomInt(60, 71);
     int mode = getRandomInt(0, 1);  // is major or not
     printf("Generated tonality: tonic = %d, mode = %s\n", tonic, mode ? "Major" : "Minor");
@@ -23,6 +26,9 @@ int main(int argc, char **argv) {
     }
     free(accompaniment);
     free(melody);
+
+    clock_t endTime = clock();
+    printf("\nTime of program execution: %f\n", (double) (endTime - startTime) / CLOCKS_PER_SEC);
 
     printf("\nPress any key to exit...");
     _getch();  // Wait user's input to not exit immediately

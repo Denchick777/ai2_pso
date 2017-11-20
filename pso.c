@@ -106,7 +106,7 @@ double *executePSO(ConfigPSO *conf, _Bool printIters) {
             }
         }
         if (printIters) {
-            printf("Iteration: %d; Best fitness: %f\n", iterCounter, bestParticle->bestFitness);
+            printf("Iteration: %d; Best fitness: %.15f\n", iterCounter, bestParticle->bestFitness);
         }
         if (inert >= conf->inertThreshold) {
             inert *= conf->inertStep;
@@ -114,7 +114,7 @@ double *executePSO(ConfigPSO *conf, _Bool printIters) {
     }
 
     for (i = 0; i < conf->dimensions; ++i) {  // TODO remove
-        printf("best[%d] %f\n", i, bestParticle->bestPosition[i]);
+        printf("best[%d] %.15f\n", i, bestParticle->bestPosition[i]);
     }
 
     double *res = (double *) malloc(sizeof(double) * conf->dimensions);
