@@ -285,8 +285,8 @@ int *generateMelody(_Bool showDebugInfo) {
     conf.particleCreator = &melodyParticleCreator;
     conf.fitnessFunction = &melodyFitnessFunction;
     conf.dimensions = MEL_DIMENSIONS;
-    conf.swarmSize = 200;
-    conf.iterThreshold = 300;
+    conf.swarmSize = 300;
+    conf.iterThreshold = 500;
     conf.c0 = 1.0;
     conf.c1 = 2.05;
     conf.c2 = 2.05;
@@ -316,7 +316,11 @@ double *melodyParticleCreator() {
 double melodyFitnessFunction(double *part) {
     double fit = 0.0, curNote;
     int i;
-    for (i = 0; i < MEL_DIMENSIONS; ++i) {
+    for (i = 0; i < MEL_DIMENSIONS; i += 2) {  // All odd notes that are goes together with chords
+        curNote = part[i];
+        // TODO
+    }
+    for (i = 1; i < MEL_DIMENSIONS; i += 2) {  // All even notes that are played between/after chords
         curNote = part[i];
         // TODO
     }

@@ -9,14 +9,14 @@
 void writeMIDI(char *filename, int *melody, int **accompaniment) {
     int i, j;
 
-    printf("Melody: [");
+    printf("\nMelody: [");
     for (i = 0; i < MEL_DIMENSIONS; ++i) {
         if (i != 0) {
             printf(", ");
         }
         printf("%d", melody[i]);
     }
-    printf("]\nAccompaniment: [");
+    printf("]\n\nAccompaniment: [");
     for (i = 0; i < ACC_DIMENSIONS; ++i) {
         if (i != 0) {
             printf(", ");

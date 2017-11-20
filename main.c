@@ -12,12 +12,13 @@ int main(int argc, char **argv) {
 
     int tonic = getRandomInt(60, 71);
     int mode = getRandomInt(0, 1);  // is major or not
-    printf("Generated tonality: tonic = %d, mode = %s\n", tonic, mode ? "Major" : "Minor");
-
     setTonalityForPSO(Tonality_init(tonic, mode));
 
     int **accompaniment = generateAccompaniment(true);
     int *melody = generateMelody(true);
+
+    printf("\nGenerated tonality: tonic = %d, mode = %s\n", tonic, mode ? "Major" : "Minor");
+
     writeMIDI("mus.mid", melody, accompaniment);
 
     int i;
@@ -58,5 +59,5 @@ int main(int argc, char **argv) {
 //    setTonalityForPSO(Tonality_init(68, 1));
 //    chordFitnessFunction(p);
 //    accompanimentFitnessFunction(p);
-    return 0;
+//    return 0;
 }
