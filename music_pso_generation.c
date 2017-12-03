@@ -286,11 +286,11 @@ int *generateMelody(_Bool showDebugInfo) {
     conf.particleCreator = &melodyParticleCreator;
     conf.fitnessFunction = &melodyFitnessFunction;
     conf.dimensions = MEL_DIMENSIONS;
-    conf.swarmSize = 300;
-    conf.iterThreshold = 500;
+    conf.swarmSize = 350;
+    conf.iterThreshold = 600;
     conf.c0 = 1.0;
-    conf.c1 = 2.05;
-    conf.c2 = 2.05;
+    conf.c1 = 2.01;
+    conf.c2 = 2.01;
     conf.inertInit = 1.0;
     conf.inertThreshold = 0.0;
     conf.inertStep = 0.999;
@@ -404,9 +404,4 @@ double melodyFitnessFunction(double *part) {
         }
     }
     return fit;
-}
-
-_Bool checkForCorrectness(int *melody, int **accompaniment) {
-    // TODO
-    return true;
 }
